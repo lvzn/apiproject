@@ -14,7 +14,7 @@ function initializeMap(data) {
             layer.on("click", () => { //hopefully correct syntax
                 //TODO add data to chart 
                 console.log(feature.properties.name);
-            })
+            }) 
         }
     }).addTo(map);
     data.forEach(element => {

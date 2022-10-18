@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "start": "parcel index.html"
+  },
+  "dependencies": {
+    "frappe-charts": "^1.6.2",
+    "leaflet": "^1.9.2",
+    "yarn": "^1.22.19"
+  }
+}

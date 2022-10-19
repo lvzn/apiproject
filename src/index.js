@@ -465,18 +465,42 @@ async function getMapData() {
     const munjson = await mundata.json();
     const partydata = await getPartyData();
     initializeMap(regjson.features, munjson.features, partydata);
+    initializeChart(partydata);
 }
 
 async function getPartyData() {
-    const url = "https://statfin.stat.fi:443/PxWeb/api/v1/fi/StatFin/evaa/130_evaa_2019_tau_103.px"
+    const url = "https://statfin.stat.fi:443/PxWeb/api/v1/fi/StatFin/evaa/130_evaa_2019_tau_103.px";
     const res = await fetch(url, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(chartQuery)
     })
     const data = await res.json();
-    console.log(data);
     return data;
+}
+
+
+
+async function initializeChart(partydata) {
+    console.log(partydata);
+    const labels = []
+    for (let i = 1; i < 21; i++) {
+        labels.push(partydata.dimension.Puolue.category.label[Object.keys(partydata.dimension.Puolue.category.index).find(key => partydata.dimension.Puolue.category.index[key] === i)])
+    }
+    console.log(labels);
+    let values = []
+    for (let i = 1; i < 21; i++) {
+        values.push(partydata.value[i]);
+    }
+    const dataset = { name: "Puoluekannatus Suomessa", chartType: "bar", values: values }
+    const chartData = { labels: labels, datasets: [dataset] }
+    const chart = new Chart("#chart", {
+        title: "Puoluekannatus",
+        data: chartData,
+        type: "axis-mixed",
+        height: "600",
+        colors: Object.values(partyColors)
+    })
 }
 
 getMapData();

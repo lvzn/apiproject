@@ -397,7 +397,7 @@ function getMostSupportedParty(feature, partydata) {
     return partyLabel;
 }
 
-function initializeMap(regdata, mundata, partydata) {
+function initializeMap(regdata, mundata, partydata, chart) {
     console.log(mundata);
     let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -410,8 +410,18 @@ function initializeMap(regdata, mundata, partydata) {
             layer.bindTooltip(feature.properties.name + "<br/>Väkiluku: " + feature.properties.vaesto + "<br/>Puolue: " + partyLabel)
             layer.on("click", () => {
                 //TODO add data to chart 
+                const labels = []
+                for (let i = 1; i < 21; i++) {
+                    labels.push(partydata.dimension.Puolue.category.label[Object.keys(partydata.dimension.Puolue.category.index).find(key => partydata.dimension.Puolue.category.index[key] === i)]) //fml
+                }
+                let values = [];
+                for (let i = 1; i < 21; i++) {
+                    values.push(partydata.value[partydata.dimension.Äänestysalue.category.index[feature.properties.kunta] * 21 + i])
+                }
+                const dataset = { name: "Puoluekannatus: " + feature.properties.nimi, chartType: "bar", values: values }
+                const chartData = { labels: labels, datasets: [dataset] }
                 console.log(feature.properties.kunta); //kunta id
-
+                chart.update(chartData);
             })
         },
         style: (feature) => {
@@ -464,8 +474,9 @@ async function getMapData() {
     const mundata = await fetch(municipalityurl);
     const munjson = await mundata.json();
     const partydata = await getPartyData();
-    initializeMap(regjson.features, munjson.features, partydata);
-    initializeChart(partydata);
+    let chart = await initializeChart(partydata);
+    initializeMap(regjson.features, munjson.features, partydata, chart);
+
 }
 
 async function getPartyData() {
@@ -479,29 +490,31 @@ async function getPartyData() {
     return data;
 }
 
-
-
 async function initializeChart(partydata) {
     console.log(partydata);
     const labels = []
     for (let i = 1; i < 21; i++) {
-        labels.push(partydata.dimension.Puolue.category.label[Object.keys(partydata.dimension.Puolue.category.index).find(key => partydata.dimension.Puolue.category.index[key] === i)])
+        labels.push(partydata.dimension.Puolue.category.label[Object.keys(partydata.dimension.Puolue.category.index).find(key => partydata.dimension.Puolue.category.index[key] === i)]) //fml
     }
     console.log(labels);
     let values = []
     for (let i = 1; i < 21; i++) {
         values.push(partydata.value[i]);
     }
+    console.log(Object.values(partyColors))
     const dataset = { name: "Puoluekannatus Suomessa", chartType: "bar", values: values }
     const chartData = { labels: labels, datasets: [dataset] }
     const chart = new Chart("#chart", {
         title: "Puoluekannatus",
         data: chartData,
         type: "axis-mixed",
-        height: "600",
-        colors: Object.values(partyColors)
+        height: "450",
+        colors: ["#1dbac2"]
     })
+    return chart;
 }
+
+
 
 getMapData();
 getChartData();

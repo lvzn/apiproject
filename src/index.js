@@ -743,19 +743,8 @@ const partyColors = {
 
 function calculateHue(perc) {
     let hue = ((perc/68.7) ** 5) * 60;
-    // let hue = 0;
-    // if (diff < 0) {
-    //     hue = 10
-    // }
-    // else if (diff > 0) {
-    //     hue = 100;
-    // }
-    // else if (diff === 0) {
-    //     hue = 60
-    // }
     if (hue > 120)
         hue = 120;
-    console.log(hue);
     return hue
 }
 
@@ -802,21 +791,21 @@ function initializeMap(regdata, mundata, partydata, votedata, chart) {
         },
         style: (feature) => {
             let partyLabel = getMostSupportedParty(feature, partydata);
-            return { color: partyColors[partyLabel] }
+            return { color: partyColors[partyLabel], weight: 2 }
         }
     });
     mundata.forEach(element => {
         munLayer.addData(element);
     });
-    console.log(votedata);
+    // console.log(votedata);
     let voteLayer = L.geoJSON(null, {
         onEachFeature: (feature, layer) => {
-            layer.bindTooltip(feature.properties.name + "<br/>Väkiluku: " + feature.properties.vaesto)
-            layer.bindPopup(`<p>Väkiluku: ${feature.properties.vaesto} <br/>Äänestysprosentti: ${votedata.value[votedata.dimension["Äänestysalue"].category.index[feature.properties.kunta]]}</p>`);
+            layer.bindTooltip(feature.properties.name)
+            layer.bindPopup(`<p>${feature.properties.nimi} <br/>Väkiluku: ${feature.properties.vaesto} <br/>Äänestysprosentti: ${votedata.value[votedata.dimension["Äänestysalue"].category.index[feature.properties.kunta]]}</p>`);
         }, 
         style: (feature) => {
             let perc = votedata.value[votedata.dimension["Äänestysalue"].category.index[feature.properties.kunta]]
-            return {color: `hsl(${calculateHue(perc)}, 70%, 50%)`}
+            return {color: `hsl(${calculateHue(perc)}, 70%, 50%)`, weight: 2}
         }
     })
 
@@ -825,10 +814,6 @@ function initializeMap(regdata, mundata, partydata, votedata, chart) {
     let regLayer = L.geoJSON(null, {
         onEachFeature: (feature, layer) => {
             layer.bindTooltip(feature.properties.name + "<br/>Väkiluku: " + feature.properties.vaesto)
-            layer.on("click", () => {
-                //TODO add data to chart 
-                console.log(feature.properties.name);
-            })
         }
     });
     regdata.forEach(element => {
@@ -905,6 +890,8 @@ async function initializeChart(partydata) {
         height: "450",
         colors: ["#1dbac2"]
     })
+    const button = document.querySelector("#export");
+    button.addEventListener("click", () => chart.export());
     return chart;
 }
 
